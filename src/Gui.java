@@ -2,8 +2,6 @@ import Models.Shoe;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,13 +17,22 @@ public class Gui {
     Main main;
     int loginCounter = 0;
     int lastOrderID;
-    File file;
+    Font defaultFont = new Font("Arial", Font.PLAIN, 16);
 
     public Gui(Main main) {
         this.main = main;
         this.repo = main.repo;
         JFrame frame = new JFrame("Skobutik");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        UIManager.put("Button.font", defaultFont);
+        UIManager.put("CheckBox.font", defaultFont);
+        UIManager.put("Label.font", defaultFont);
+        UIManager.put("Panel.font", defaultFont);
+        UIManager.put("TabbedPane.font", defaultFont);
+        UIManager.put("TextField.font", defaultFont);
+        UIManager.put("PasswordField.font", defaultFont);
+        UIManager.put("TextArea.font", defaultFont);
+        UIManager.put("TextPane.font", defaultFont);
         this.addComponentToPane(frame.getContentPane());
 
         try {
@@ -36,9 +43,8 @@ public class Gui {
             e.printStackTrace();
         }
 
-        /* Set window icon */
-        //ImageIcon img = new ImageIcon("./img/shoe16.png");
-        //frame.setIconImage(img.getImage());
+
+
         /* Turn off metal's use of bold fonts */
         UIManager.put("swing.boldMetal", Boolean.FALSE);
         frame.pack();
@@ -49,7 +55,8 @@ public class Gui {
     public void addComponentToPane(Container pane) throws RuntimeException {
         JTabbedPane tabbedPane = new JTabbedPane();
         GridBagConstraints gbc = new GridBagConstraints();
-
+        Insets insets = new Insets(10, 10, 10, 10);
+        gbc.insets = insets;
         // Card "Login"
         JPanel cardLogin = new JPanel() {
             public Dimension getPreferredSize() {
@@ -58,7 +65,7 @@ public class Gui {
                 return size;
             }
         };
-        cardLogin.setLayout(new GridBagLayout(3, 2));
+        cardLogin.setLayout(new GridBagLayout());
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -84,11 +91,13 @@ public class Gui {
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        //gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
         JButton loginButton = new JButton("Logga in");
         cardLogin.add(loginButton, gbc);
 
         gbc.gridy = 3;
+        //gbc.anchor = GridBagConstraints.CENTER;
         JLabel messageLabel = new JLabel();
         cardLogin.add(messageLabel, gbc);
 
@@ -107,7 +116,7 @@ public class Gui {
                 if (loginCounter == 3) {
                     try {
                         // TODO: setText funkar inte ↓
-                        messageLabel.setText("För många fösök");
+                        messageLabel.setText("För många försök");
                         java.util.concurrent.TimeUnit.SECONDS.sleep(1);
                     } catch (InterruptedException ex) {
                         throw new RuntimeException("Error executin Timeout.SECONDS.sleep", ex);
@@ -117,7 +126,7 @@ public class Gui {
             } else {
                 userNameTextField.setText("");
                 passwordField.setText("");
-                messageLabel.setText("Välkommen tillbaka " + main.thisCustomer.getFirstName());
+                messageLabel.setText("Välkommen tillbaka " + main.thisCustomer.getFirstName() + "!");
                 tabbedPane.setEnabledAt(1, true);
                 tabbedPane.setEnabledAt(2, true);
             }
@@ -171,8 +180,8 @@ public class Gui {
         tabbedPane.addTab(ORDER, cardOrder);
         tabbedPane.addTab(REPORTS, cardReports);
         //tabbedPane.setEnabledAt(1, false);
-        tabbedPane.setSelectedIndex(1); // FOR TESTING
-        tabbedPane.setEnabledAt(2, false);
+        tabbedPane.setSelectedIndex(0); // FOR TESTING
+        //tabbedPane.setEnabledAt(2, false);
         pane.add(tabbedPane, BorderLayout.CENTER);
     }
 
