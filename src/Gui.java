@@ -5,11 +5,9 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Gui {
-    final static String LOGIN = "Login";
-    final static String ORDER = "Beställ";
-    final static String REPORTS = "Rapporter";
     final static int extraWindowWidth = 100;
     List<JCheckBox> checkBoxes = new ArrayList<>();
     List<JSpinner> spinners = new ArrayList<>();
@@ -43,8 +41,6 @@ public class Gui {
             e.printStackTrace();
         }
 
-
-
         /* Turn off metal's use of bold fonts */
         UIManager.put("swing.boldMetal", Boolean.FALSE);
         frame.pack();
@@ -55,8 +51,7 @@ public class Gui {
     public void addComponentToPane(Container pane) throws RuntimeException {
         JTabbedPane tabbedPane = new JTabbedPane();
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets insets = new Insets(10, 10, 10, 10);
-        gbc.insets = insets;
+        gbc.insets = new Insets(10, 10, 10, 10);
         // Card "Login"
         JPanel cardLogin = new JPanel() {
             public Dimension getPreferredSize() {
@@ -91,13 +86,11 @@ public class Gui {
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
-        //gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.CENTER;
         JButton loginButton = new JButton("Logga in");
         cardLogin.add(loginButton, gbc);
 
         gbc.gridy = 3;
-        //gbc.anchor = GridBagConstraints.CENTER;
         JLabel messageLabel = new JLabel();
         cardLogin.add(messageLabel, gbc);
 
@@ -136,24 +129,60 @@ public class Gui {
         // TODO: Lägg till kategorier
         JPanel cardOrder = new JPanel();
         int numberOfShoes = main.shoes.size();
-        cardOrder.setLayout(new GridLayout(numberOfShoes + 2, 8));
+        cardOrder.setLayout(new GridBagLayout());
         String[] headings = {"Val", "Antal", "Märke", "Färg", "Storlek", "Pris", "Lagersaldo"};
-        for (String s : headings)
-            cardOrder.add(new JLabel(s));
+
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        for (String s : headings) {
+            cardOrder.add(new JLabel(s), gbc);
+            gbc.gridx++;
+        }
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         for (Shoe shoe : main.shoes) {
             checkBoxes.add(new JCheckBox());
-            cardOrder.add(checkBoxes.getLast());
+            cardOrder.add(checkBoxes.getLast(), gbc);
+
+            gbc.gridx++;
             SpinnerNumberModel model = new SpinnerNumberModel(1, 1, shoe.getInventory(), 1);
             spinners.add(new JSpinner(model));
-            cardOrder.add(spinners.getLast());
-            cardOrder.add(new JLabel(shoe.getBrand()));
-            cardOrder.add(new JLabel(shoe.getColor()));
-            cardOrder.add(new JLabel("" + shoe.getSize()));
-            cardOrder.add(new JLabel("" + shoe.getPrice()));
-            cardOrder.add(new JLabel("" + shoe.getInventory()));
+            JComponent editor = spinners.getLast().getEditor();
+            JFormattedTextField tf = ((JSpinner.DefaultEditor) editor).getTextField();
+            tf.setColumns(3);
+            cardOrder.add(spinners.getLast(), gbc);
+
+            gbc.gridx++;
+            cardOrder.add(new JLabel(shoe.getBrand()), gbc);
+
+            gbc.gridx++;
+            cardOrder.add(new JLabel(shoe.getColor()), gbc);
+
+            gbc.gridx++;
+            cardOrder.add(new JLabel("" + shoe.getSize()), gbc);
+
+            gbc.gridx++;
+            cardOrder.add(new JLabel("" + shoe.getPrice()), gbc);
+
+            gbc.gridx++;
+            cardOrder.add(new JLabel("" + shoe.getInventory()), gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
         }
+
+        gbc.gridx = 3;
         JButton orderButton = new JButton("Beställ");
-        cardOrder.add(orderButton);
+        cardOrder.add(orderButton, gbc);
+
+        gbc.gridx = 2;
+        gbc.gridy++;
+        gbc.gridwidth = 3;
+        gbc.anchor = GridBagConstraints.CENTER;
+        JLabel orderMessageLabel = new JLabel();
+        cardOrder.add(orderMessageLabel, gbc);
         orderButton.addActionListener(e -> {
             try {
                 lastOrderID = main.repo.getLastOrderID();
@@ -169,6 +198,17 @@ public class Gui {
                     }
                 }
             }
+            orderMessageLabel.setText("Beställningen genomförd!");
+            for (JCheckBox box : checkBoxes)
+                box.setSelected(false);
+            for (JSpinner spinner : spinners)
+                spinner.setValue(1);
+            try {
+                TimeUnit.SECONDS.sleep(10);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException("Error sleep timer", ex);
+            }
+            orderMessageLabel.setText("");
         });
 
         // Card "Reports"
@@ -176,9 +216,9 @@ public class Gui {
         cardReports.add(new JTextField("TextField", 20));
 
         // TabbedPane
-        tabbedPane.addTab(LOGIN, cardLogin);
-        tabbedPane.addTab(ORDER, cardOrder);
-        tabbedPane.addTab(REPORTS, cardReports);
+        tabbedPane.addTab("Login", cardLogin);
+        tabbedPane.addTab("Beställ", cardOrder);
+        tabbedPane.addTab("Rapporter", cardReports);
         //tabbedPane.setEnabledAt(1, false);
         tabbedPane.setSelectedIndex(0); // FOR TESTING
         //tabbedPane.setEnabledAt(2, false);
