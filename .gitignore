@@ -1,7 +1,13 @@
+## Java ###
+*.jar
+
 ### IntelliJ IDEA ###
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+.idea/
+lib/
+*.iml
 
 ### Eclipse ###
 .apt_generated
@@ -27,3 +33,9 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Security ###
+*.properties
+
+### MySQL ###
+*.sql
