@@ -4,9 +4,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class Main {
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_RED = "\u001B[31m";
     List<Shoe> shoes;
     List<Category> categories;
     List<CategoryMapping> categoryMappings;
@@ -23,6 +20,7 @@ public class Main {
         }
     }
 
+    /* FOR TESTING
     public void printShoesList() {
         System.out.printf(ANSI_YELLOW + "%-12s%-8s%-10s%-10s%-8s\n", "Märke", "Färg", "Storlek", "Pris", "Lagersaldo" + ANSI_RESET);
         shoes.forEach(e -> System.out.println(e));
@@ -40,15 +38,25 @@ public class Main {
         categoryMappings.forEach(e -> System.out.println(e));
         System.out.println();
     }
+    */
 
     public static void main(String[] args) throws Exception {
         Main main = new Main();
+        new Gui(main);
+        List<String> test = main.repo.getListQueryOne();
+        test = test.stream().filter(s -> s.contains("size=46")).toList();
 
-        Gui gui = new Gui(main);
-
-        //main.printShoesList(); // TEST
-        //main.printCategoriesList(); // TEST
-        //main.printCategoriesMappingList(); // TEST
+        ListCleaner listCleaner = list ->
+                list.stream()
+                        .map(s -> s.replace("firstname=", ""))
+                        .map(s -> s.replace("lastname=", ""))
+                        .map(s -> s.replace("brand=", ""))
+                        .map(s -> s.replace("color=", ""))
+                        .map(s -> s.replace("size=", ""))
+                        .toList();
+        test = listCleaner.apply(test);
+        //test = test.stream().map(s -> s.replace("firstname=", "")).map(s -> s.replace("lastname=", "")).toList();
+        test.forEach(System.out::println);
 
     }
 }

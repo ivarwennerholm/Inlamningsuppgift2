@@ -1,11 +1,10 @@
 package Models;
 
 public class Shoe {
-    private int id, size, inventory;
-    private double price;
+    private int id, size, inventory, price;
     private String brand, color;
 
-    public Shoe(int id, int size, int inventory, double price, String brand, String color) {
+    public Shoe(int id, int size, int inventory, int price, String brand, String color) {
         this.id = id;
         this.size = size;
         this.inventory = inventory;
@@ -38,11 +37,11 @@ public class Shoe {
         this.inventory = inventory;
     }
 
-    public double getPrice() {
+    public int getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(int price) {
         this.price = price;
     }
 

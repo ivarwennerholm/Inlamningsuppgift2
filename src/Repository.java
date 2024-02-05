@@ -33,8 +33,7 @@ public class Repository {
     }
 
     public List<Shoe> getShoes() throws SQLException {
-        int id, size, inventory;
-        double prize;
+        int id, size, inventory, price;
         String brand, color;
         Shoe shoe;
         try {
@@ -45,10 +44,10 @@ public class Repository {
                 id = rs.getInt("id");
                 brand = rs.getString("brand");
                 color = rs.getString("color");
-                prize = rs.getDouble("price");
+                price = rs.getInt("price");
                 size = rs.getInt("shoesize");
                 inventory = rs.getInt("inventory");
-                shoe = new Shoe(id, size, inventory, prize, brand, color);
+                shoe = new Shoe(id, size, inventory, price, brand, color);
                 shoes.add(shoe);
             }
         } catch (SQLException e) {
@@ -211,84 +210,80 @@ public class Repository {
         }
     }
 
-    // TODO: BEHÖVS INTE LÄNGRE?
-    /************************
-     public List<Customer> getCustomers() throws Exception {
-     int id, zipCode;
-     String firstName, lastName, address, city, userName, pw;
-     Customer customer;
-     try {
-     con = DriverManager.getConnection(url, user, this.pw);
-     stmt = con.createStatement();
-     rs = stmt.executeQuery("SELECT * FROM Customers");
-     while (rs.next()) {
-     id = rs.getInt("id");
-     firstName = rs.getString("firstname");
-     lastName = rs.getString("lastname");
-     address = rs.getString("address");
-     zipCode = rs.getInt("zipcode");
-     city = rs.getString("city");
-     userName = rs.getString("username");
-     pw = rs.getString("pw");
-     customer = new Customer(id, zipCode, firstName, lastName, address, city, userName, pw);
-     customers.add(customer);
-     }
-     } catch (SQLException e) {
-     e.printStackTrace();
-     throw new Exception("Error fetching Customers", e);
-     } finally {
-     try {
-     if (rs != null) rs.close();
-     if (stmt != null) stmt.close();
-     if (con != null) con.close();
-     } catch (SQLException e) {
-     e.printStackTrace();
-     }
-     }
-     return customers;
-     }
 
-     public List<Order> getOrders() throws Exception {
-     int id, customerID, year, month, day;
-     String dateString;
-     LocalDate date;
-     Customer customer = null;
-     Order order;
-     try {
-     con = DriverManager.getConnection(url, user, pw);
-     stmt = con.createStatement();
-     rs = stmt.executeQuery("SELECT * FROM Orders");
-     while (rs.next()) {
-     id = rs.getInt("id");
-     dateString = rs.getString("orddate");
-     customerID = rs.getInt("customerID");
-     year = Integer.parseInt(dateString.substring(0, 4));
-     month = Integer.parseInt(dateString.substring(5, 7));
-     day = Integer.parseInt(dateString.substring(8, 10));
-     date = LocalDate.of(year, month, day);
-     //System.out.println(date); // TEST
-     for (Customer cust : customers) {
-     if (cust.getId() == customerID)
-     customer = cust;
-     }
-     order = new Order(id, date, customer);
-     orders.add(order);
-     }
-     } catch (SQLException e) {
-     e.printStackTrace();
-     throw new Exception("Error fetching Orders", e);
-     } finally {
-     try {
-     if (rs != null) rs.close();
-     if (stmt != null) stmt.close();
-     if (con != null) con.close();
-     } catch (SQLException e) {
-     e.printStackTrace();
-     }
-     }
-     return orders;
-     }
-     *************************/
+    public String[] getOrderedTypes(String type) throws SQLException {
+        List<String> list = new ArrayList<>();
+        String inject = "";
+        if (type.equals("brands"))
+            inject = "Shoes.brand";
+        if (type.equals("colors"))
+            inject = "Shoes.color";
+        if (type.equals("sizes"))
+            inject = "Shoes.shoesize";
+        String query = "SELECT DISTINCT " +
+                inject +
+                " AS types\n" +
+                "FROM OrderContent\n" +
+                "JOIN Shoes ON OrderContent.shoeID = Shoes.id\n" +
+                "ORDER BY types";
+        try {
+            con = DriverManager.getConnection(url, user, pw);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                list.add(rs.getString("types"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException("Error fetching ordered types in getOrderedTypes()", e);
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return list.toArray(new String[0]);
+    }
+
+    public List<String> getListQueryOne() throws SQLException {
+        List<String> output = new ArrayList<>();
+        StringBuilder str = new StringBuilder();
+        String query = "SELECT Customers.firstname, Customers.lastname, Shoes.brand, Shoes.color, Shoes.shoesize\n" +
+                "FROM Customers\n" +
+                "JOIN Orders ON Customers.id = Orders.customerID\n" +
+                "JOIN OrderContent ON Orders.id = OrderContent.orderID\n" +
+                "JOIN Shoes ON OrderContent.shoeID = Shoes.id;";
+        try {
+            con = DriverManager.getConnection(url, user, pw);
+            stmt = con.createStatement();
+
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                str.append("firstname=" + rs.getString("firstname"));
+                str.append(" lastname=" + rs.getString("lastname"));
+                str.append(" brand=" + rs.getString("brand"));
+                str.append(" color=" + rs.getString("color"));
+                str.append(" size=" + rs.getInt("shoesize"));
+                output.add(str.toString());
+                str.setLength(0);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException("Error fetching list for query #1'", e);
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return output;
+    }
 
 
 }
