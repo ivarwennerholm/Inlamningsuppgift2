@@ -3,9 +3,9 @@ package Models;
 import java.time.LocalDate;
 
 public class Order {
-    private int id;
-    private LocalDate date;
-    private Customer customer;
+    private final int id;
+    private final LocalDate date;
+    private final Customer customer;
 
     public Order(int id, LocalDate date, Customer customer) {
         this.id = id;
@@ -23,11 +23,6 @@ public class Order {
 
     public Customer getCustomer() {
         return customer;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%-6s%-14s%-12s", id, date, customer.getId());
     }
 
 }

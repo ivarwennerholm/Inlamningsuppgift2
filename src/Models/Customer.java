@@ -1,8 +1,8 @@
 package Models;
 
 public class Customer {
-    private int id, zipCode;
-    private String firstName, lastName, address, city;
+    private final int id, zipCode;
+    private final String firstName, lastName, address, city;
 
     public Customer(int id, int zipCode, String firstName, String lastName, String address, String city) {
         this.id = id;
@@ -35,11 +35,6 @@ public class Customer {
 
     public String getCity() {
         return city;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%-6s%-12s%-18s%-24s%-12s%-12s", id, firstName, lastName, address, zipCode, city);
     }
 
 }

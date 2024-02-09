@@ -233,6 +233,7 @@ public class Repository {
 
     public String[] getOrderedTypes(String type) throws SQLException {
         List<String> list = new ArrayList<>();
+        List<String[]> report = new ArrayList<>();
         String inject = "";
         if (type.equals("brands"))
             inject = "Shoes.brand";
@@ -267,9 +268,10 @@ public class Repository {
         return list.toArray(new String[0]);
     }
 
-    public List<String> getListQueryOne() throws SQLException {
-        List<String> output = new ArrayList<>();
+    public List<String[]> getListQueryOne(String type, String target) throws SQLException {
+        List<String> list = new ArrayList<>();
         StringBuilder str = new StringBuilder();
+        List<String[]> report = new ArrayList<>();
         String query = "SELECT CONCAT(Customers.firstname, \" \", Customers.lastname) AS name, Shoes.brand, Shoes.color, Shoes.shoesize " +
                 "FROM Customers " +
                 "JOIN Orders ON Customers.id = Orders.customerID " +
@@ -281,11 +283,11 @@ public class Repository {
 
             rs = stmt.executeQuery(query);
             while (rs.next()) {
-                str.append("name=" + rs.getString("name"));
-                str.append(" brand=" + rs.getString("brand"));
-                str.append(" color=" + rs.getString("color"));
-                str.append(" size=" + rs.getInt("shoesize"));
-                output.add(str.toString());
+                str.append("name=" + rs.getString("name") + ":");
+                str.append("brand=" + rs.getString("brand") + ":");
+                str.append("color=" + rs.getString("color") + ":");
+                str.append("size=" + rs.getInt("shoesize"));
+                list.add(str.toString());
                 str.setLength(0);
             }
         } catch (SQLException e) {
@@ -300,9 +302,29 @@ public class Repository {
                 e.printStackTrace();
             }
         }
-        return output;
+        if (type.equals("brand")) {
+            list = list.stream()
+                    .filter(s -> s.contains("brand=" + target))
+                    .toList();
+        } else if (type.equals("color")) {
+            list = list.stream()
+                    .filter(s -> s.contains("color=" + target))
+                    .toList();
+        } else {
+            list = list.stream()
+                    .filter(s -> s.contains("size=" + target))
+                    .toList();
+        }
+        list = list.stream().
+                map(s -> s.replace("name=", "")).
+                map(s -> s.replace("brand=", "")).
+                map(s -> s.replace("color=", "")).
+                map(s -> s.replace("size=", "")).
+                toList();
+        for (String s : list)
+            report.add(s.split(":"));
+        return report;
     }
-
 
     public List<String[]> getListQueryTwo() throws SQLException {
         List<String> list = new ArrayList<>();

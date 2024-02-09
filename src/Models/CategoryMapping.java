@@ -1,8 +1,8 @@
 package Models;
 
 public class CategoryMapping {
-    private Category category;
-    private Shoe shoe;
+    private final Category category;
+    private final Shoe shoe;
 
     public CategoryMapping(Category category, Shoe shoe) {
         this.category = category;
@@ -16,10 +16,4 @@ public class CategoryMapping {
     public Shoe getShoe() {
         return shoe;
     }
-
-    @Override
-    public String toString() {
-        return String.format("%-14s%-10s", category.getId(), shoe.getId());
-    }
-
 }

@@ -12,7 +12,6 @@ public class Gui {
     int lastOrderID;
     Repository repo;
     Font defaultFont = new Font("Arial", Font.PLAIN, 16);
-    //Font defaultBoldFont = new Font("Arial", Font.BOLD, 16);
 
     public Gui(Repository r) {
         repo = r;
@@ -353,35 +352,20 @@ public class Gui {
         gbc.anchor = GridBagConstraints.CENTER;
         cardReports.add(showReportButton, gbc);
         showReportButton.addActionListener(e -> {
-            List<String> query;
-            ListCleaner filter;
-            List<String[]> report = new ArrayList<>();
-            ListCleaner clean = list ->
-                    list.stream()
-                            .map(s -> s.replace("firstname=", ""))
-                            .map(s -> s.replace("lastname=", ""))
-                            .map(s -> s.replace("brand=", ""))
-                            .map(s -> s.replace("color=", ""))
-                            .map(s -> s.replace("size=", ""))
-                            .map(s -> s.replace("name=", ""))
-                            .map(s -> s.replace("id=", ""))
-                            .toList();
-
+            List<String[]> report;
             if (queryOneButton.isSelected()) {
                 try {
-                    query = repo.getListQueryOne();
+                    if (typeBrandsButton.isSelected()) {
+                        report = repo.getListQueryOne("brand", brandsBox.getSelectedItem().toString());
+                    } else if (typeColorsButton.isSelected()) {
+                        report = repo.getListQueryOne("color", colorsBox.getSelectedItem().toString());
+                    } else {
+                        report = repo.getListQueryOne("size", sizesBox.getSelectedItem().toString());
+                    }
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
-                if (typeBrandsButton.isSelected())
-                    filter = getListFilter("brand", brandsBox.getSelectedItem().toString());
-                else if (typeColorsButton.isSelected())
-                    filter = getListFilter("color", colorsBox.getSelectedItem().toString());
-                else
-                    filter = getListFilter("size", sizesBox.getSelectedItem().toString());
-                query = filterAndCleanList(filter.andThen(clean), query);
-                //new ReportWindow(QUERYONE, query);
-
+                new ReportWindow(QUERYONE, report);
             } else if (queryTwoButton.isSelected()) {
                 try {
                     report = repo.getListQueryTwo();
@@ -461,66 +445,4 @@ public class Gui {
         }
     }
 
-    /*
-    ReportWindowOLD(String title, List<String> report) {
-        JPanel panel = new JPanel() {
-            public Dimension getPreferredSize() {
-                Dimension size = super.getPreferredSize();
-                size.width += extraWindowWidth;
-                size.height += extraWindowHeight;
-                return size;
-            }
-        };
-        titleLabel.setText("<html><b>" + title + "</b></html>");
-        //titleLabel.setFont(defaultBoldFont);
-        sb.append("<html><body>");
-
-        for (String s : report)
-            sb.append(s).append("<br>");
-        sb.append("</body></html>");
-
-        reportLabel.setText(sb.toString());
-        panel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.LINE_START;
-        panel.add(titleLabel, gbc);
-        gbc.gridy = 1;
-        panel.add(reportLabel, gbc);
-        this.add(panel);
-        this.pack();
-        this.setLocationRelativeTo(null);
-        this.setVisible(true);
-
-    }
-}
-*/
-
-    public static ListCleaner getListFilter(String attribute, String target) {
-        ListCleaner filter = null;
-        if (attribute.equals("brand")) {
-            filter = list ->
-                    list.stream()
-                            .filter(s -> s.contains("brand=" + target))
-                            .toList();
-        }
-        if (attribute.equals("color")) {
-            filter = list ->
-                    list.stream()
-                            .filter(s -> s.contains("color=" + target))
-                            .toList();
-        }
-        if (attribute.equals("size")) {
-            filter = list ->
-                    list.stream()
-                            .filter(s -> s.contains("size=" + target))
-                            .toList();
-        }
-        return filter;
-    }
-
-    public static List<String> filterAndCleanList(ListCleaner lc, List<String> list) {
-        return lc.apply(list);
-    }
 }

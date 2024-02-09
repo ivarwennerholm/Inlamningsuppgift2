@@ -1,8 +1,8 @@
 package Models;
 
 public class Shoe {
-    private int id, size, inventory, price;
-    private String brand, color;
+    private final int id, size, inventory, price;
+    private final String brand, color;
 
     public Shoe(int id, int size, int inventory, int price, String brand, String color) {
         this.id = id;
@@ -35,11 +35,6 @@ public class Shoe {
 
     public String getColor() {
         return color;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%-12s%-8s%-10s%-10s%-8s", brand, color, size, price, inventory);
     }
 
 }

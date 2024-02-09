@@ -1,10 +1,9 @@
 package Models;
 
 public class OrderContent {
-
-    private Order order;
-    private Shoe shoe;
-    private int antal;
+    private final Order order;
+    private final Shoe shoe;
+    private final int antal;
 
     public OrderContent(Order order, Shoe shoe, int antal) {
         this.order = order;
