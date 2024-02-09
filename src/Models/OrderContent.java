@@ -1,7 +1,5 @@
 package Models;
 
-import Models.Shoe;
-
 public class OrderContent {
 
     private Order order;
@@ -18,23 +16,12 @@ public class OrderContent {
         return order;
     }
 
-    public void setOrder(Order order) {
-        this.order = order;
-    }
-
     public Shoe getSko() {
         return shoe;
-    }
-
-    public void setSko(Shoe shoe) {
-        this.shoe = shoe;
     }
 
     public int getAntal() {
         return antal;
     }
 
-    public void setAntal(int antal) {
-        this.antal = antal;
-    }
 }

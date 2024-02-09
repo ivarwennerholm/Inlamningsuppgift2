@@ -7,19 +7,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Gui {
-    final static int extraWindowWidth = 100;
-    List<JCheckBox> checkBoxes = new ArrayList<>();
-    List<JSpinner> spinners = new ArrayList<>();
-    Repository repo;
-    Main main;
+    final static int extraWindowWidth = 30;
+    final static int extraWindowHeight = 20;
     int lastOrderID;
+    Repository repo;
     Font defaultFont = new Font("Arial", Font.PLAIN, 16);
+    //Font defaultBoldFont = new Font("Arial", Font.BOLD, 16);
 
-    public Gui(Main main) {
-        this.main = main;
-        this.repo = main.repo;
+    public Gui(Repository r) {
+        repo = r;
+
+        List<JCheckBox> checkBoxes = new ArrayList<>();
+        List<JSpinner> spinners = new ArrayList<>();
+
         JFrame frame = new JFrame("Skobutik");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         UIManager.put("Button.font", defaultFont);
         UIManager.put("CheckBox.font", defaultFont);
         UIManager.put("Label.font", defaultFont);
@@ -31,26 +34,9 @@ public class Gui {
         UIManager.put("TextPane.font", defaultFont);
         UIManager.put("ComboBox.font", defaultFont);
         UIManager.put("Spinner.font", defaultFont);
-        this.addComponentToPane(frame.getContentPane());
 
-        try {
-            //UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-            UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-        } catch (UnsupportedLookAndFeelException | IllegalAccessException | InstantiationException |
-                 ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        /* Turn off metal's use of bold fonts */
-        UIManager.put("swing.boldMetal", Boolean.FALSE);
-
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-    }
-
-    public void addComponentToPane(Container pane) throws RuntimeException {
         JTabbedPane tabbedPane = new JTabbedPane();
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
 
@@ -59,11 +45,13 @@ public class Gui {
             public Dimension getPreferredSize() {
                 Dimension size = super.getPreferredSize();
                 size.width += extraWindowWidth;
+                size.height += extraWindowHeight;
                 return size;
             }
         };
         cardLogin.setLayout(new GridBagLayout());
 
+        // Rad 1
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.LINE_END;
@@ -74,6 +62,7 @@ public class Gui {
         JTextField userNameTextField = new JTextField("", 10);
         cardLogin.add(userNameTextField, gbc);
 
+        // Rad 2
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.LINE_END;
@@ -85,6 +74,7 @@ public class Gui {
         passwordField.setEchoChar('*');
         cardLogin.add(passwordField, gbc);
 
+        // Rad 3
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
@@ -92,6 +82,7 @@ public class Gui {
         JButton loginButton = new JButton("Logga in");
         cardLogin.add(loginButton, gbc);
 
+        // Rad 4
         gbc.gridy = 3;
         JLabel loginMessageLabel = new JLabel();
         cardLogin.add(loginMessageLabel, gbc);
@@ -100,40 +91,47 @@ public class Gui {
             String username = userNameTextField.getText();
             String password = new String(passwordField.getPassword());
             try {
-                main.thisCustomer = repo.loginCustomer(username, password);
+                repo.thisCustomer = repo.loginCustomer(username, password);
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
-
-            if (main.thisCustomer == null) {
+            if (repo.thisCustomer == null) {
                 loginMessageLabel.setText("Felaktigt login");
             } else {
                 userNameTextField.setText("");
                 passwordField.setText("");
-                loginMessageLabel.setText("Välkommen tillbaka " + main.thisCustomer.getFirstName() + "!");
+                loginMessageLabel.setText("Välkommen tillbaka " + repo.thisCustomer.getFirstName() + "!");
                 tabbedPane.setEnabledAt(1, true);
                 tabbedPane.setEnabledAt(2, true);
             }
         });
 
         // Card "Order"
-        // TODO: Lägg till kategorier
-        JPanel cardOrder = new JPanel();
-        int numberOfShoes = main.shoes.size();
+        JPanel cardOrder = new JPanel() {
+            public Dimension getPreferredSize() {
+                Dimension size = super.getPreferredSize();
+                size.width += extraWindowWidth;
+                size.height += extraWindowHeight;
+                return size;
+            }
+        };
+        int numberOfShoes = repo.shoes.size();
         String[] headings = {"Val", "Antal", "Märke", "Färg", "Storlek", "Pris", "Lagersaldo"};
         cardOrder.setLayout(new GridBagLayout());
 
+        // Rad 1
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.LINE_START;
         for (String s : headings) {
-            cardOrder.add(new JLabel(s), gbc);
+            cardOrder.add(new JLabel("<html><b>" + s + "</b></html>"), gbc);
             gbc.gridx++;
         }
 
+        // Rad 2
         gbc.gridx = 0;
         gbc.gridy = 1;
-        for (Shoe shoe : main.shoes) {
+        for (Shoe shoe : repo.shoes) {
             checkBoxes.add(new JCheckBox());
             cardOrder.add(checkBoxes.getLast(), gbc);
 
@@ -176,14 +174,14 @@ public class Gui {
         cardOrder.add(orderMessageLabel, gbc);
         orderButton.addActionListener(e -> {
             try {
-                lastOrderID = main.repo.getLastOrderID();
+                lastOrderID = repo.getLastOrderID();
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
             for (int i = 0; i < numberOfShoes; i++) {
                 if (checkBoxes.get(i).isSelected()) {
                     try {
-                        main.repo.placeOrder(lastOrderID + 1, main.thisCustomer.getId(), main.shoes.get(i).getId(), (Integer) spinners.get(i).getValue());
+                        repo.placeOrder(lastOrderID + 1, repo.thisCustomer.getId(), repo.shoes.get(i).getId(), (Integer) spinners.get(i).getValue());
                     } catch (SQLException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -197,11 +195,18 @@ public class Gui {
         });
 
         // Card "Reports"
-        JPanel cardReports = new JPanel();
+        JPanel cardReports = new JPanel() {
+            public Dimension getPreferredSize() {
+                Dimension size = super.getPreferredSize();
+                size.width += extraWindowWidth;
+                size.height += extraWindowHeight;
+                return size;
+            }
+        };
         cardReports.setLayout(new GridBagLayout());
 
         // Skapa beskrivningar för de olika rapporterna
-        final String QUERYONE = "Visa de kunder som beställt skor av ett visst märke, en viss färg eller en viss storlek";
+        final String QUERYONE = "Visa de kunder som beställt skor av ett visst märke, en viss färg eller storlek";
         final String QUERYTWO = "Visa alla kunder och ordrar per kund";
         final String QUERYTHREE = "Visa alla kunder och det totala ordervärdet per kund";
         final String QUERYFOUR = "Visa beställningsvärdet per ort";
@@ -241,8 +246,6 @@ public class Gui {
         typesChoiceGroup.add(typeColorsButton);
         typesChoiceGroup.add(typeSizesButton);
 
-        // Skapa och addera ActionListener till visa-knappen
-        // TODO: Skapa ActionListener
         JButton showReportButton = new JButton("Visa rapport");
 
         // Rad 1
@@ -349,21 +352,175 @@ public class Gui {
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.CENTER;
         cardReports.add(showReportButton, gbc);
+        showReportButton.addActionListener(e -> {
+            List<String> query;
+            ListCleaner filter;
+            List<String[]> report = new ArrayList<>();
+            ListCleaner clean = list ->
+                    list.stream()
+                            .map(s -> s.replace("firstname=", ""))
+                            .map(s -> s.replace("lastname=", ""))
+                            .map(s -> s.replace("brand=", ""))
+                            .map(s -> s.replace("color=", ""))
+                            .map(s -> s.replace("size=", ""))
+                            .map(s -> s.replace("name=", ""))
+                            .map(s -> s.replace("id=", ""))
+                            .toList();
 
-        /*
-        petList.setSelectedIndex(4);
-        petList.addActionListener(this);
-        */
+            if (queryOneButton.isSelected()) {
+                try {
+                    query = repo.getListQueryOne();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                if (typeBrandsButton.isSelected())
+                    filter = getListFilter("brand", brandsBox.getSelectedItem().toString());
+                else if (typeColorsButton.isSelected())
+                    filter = getListFilter("color", colorsBox.getSelectedItem().toString());
+                else
+                    filter = getListFilter("size", sizesBox.getSelectedItem().toString());
+                query = filterAndCleanList(filter.andThen(clean), query);
+                //new ReportWindow(QUERYONE, query);
 
+            } else if (queryTwoButton.isSelected()) {
+                try {
+                    report = repo.getListQueryTwo();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                new ReportWindow(QUERYTWO, report);
+            } else if (queryThreeButton.isSelected()) {
+                try {
+                    report = repo.getListQueryThree();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                new ReportWindow(QUERYTHREE, report);
+            } else if (queryFourButton.isSelected()) {
+                try {
+                    report = repo.getListQueryFour();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                new ReportWindow(QUERYFOUR, report);
+            } else if (queryFiveButton.isSelected()) {
+                try {
+                    report = repo.getListQueryFive();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                new ReportWindow(QUERYFIVE, report);
+            }
+        });
 
         // TabbedPane högst upp
         tabbedPane.addTab("Login", cardLogin);
         tabbedPane.addTab("Beställ", cardOrder);
         tabbedPane.addTab("Rapporter", cardReports);
         //tabbedPane.setEnabledAt(1, false);
-        tabbedPane.setSelectedIndex(2); // FOR TESTING
         //tabbedPane.setEnabledAt(2, false);
-        pane.add(tabbedPane, BorderLayout.CENTER);
+        tabbedPane.setSelectedIndex(2); // FOR TESTING
+        frame.add(tabbedPane, BorderLayout.CENTER);
+
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 
+    static class ReportWindow extends JFrame {
+        ReportWindow(String title, List<String[]> report) {
+            JPanel panel = new JPanel() {
+                public Dimension getPreferredSize() {
+                    Dimension size = super.getPreferredSize();
+                    size.width += extraWindowWidth;
+                    size.height += extraWindowHeight;
+                    return size;
+                }
+            };
+            this.add(panel);
+            GridBagConstraints gbc = new GridBagConstraints();
+            panel.setLayout(new GridBagLayout());
+            gbc.insets = new Insets(5, 5, 5, 5);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = report.get(0).length;
+            gbc.anchor = GridBagConstraints.CENTER;
+            panel.add(new JLabel("<html><b>" + title + "</b></html>"), gbc);
+            gbc.gridwidth = 1;
+            gbc.anchor = GridBagConstraints.LINE_START;
+            for (String[] array : report) {
+                gbc.gridy++;
+                for (int i = 0; i < array.length; i++) {
+                    gbc.gridx = i;
+                    panel.add(new JLabel(array[i]), gbc);
+                }
+            }
+            this.pack();
+            this.setLocationRelativeTo(null);
+            this.setVisible(true);
+        }
+    }
+
+    /*
+    ReportWindowOLD(String title, List<String> report) {
+        JPanel panel = new JPanel() {
+            public Dimension getPreferredSize() {
+                Dimension size = super.getPreferredSize();
+                size.width += extraWindowWidth;
+                size.height += extraWindowHeight;
+                return size;
+            }
+        };
+        titleLabel.setText("<html><b>" + title + "</b></html>");
+        //titleLabel.setFont(defaultBoldFont);
+        sb.append("<html><body>");
+
+        for (String s : report)
+            sb.append(s).append("<br>");
+        sb.append("</body></html>");
+
+        reportLabel.setText(sb.toString());
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        panel.add(titleLabel, gbc);
+        gbc.gridy = 1;
+        panel.add(reportLabel, gbc);
+        this.add(panel);
+        this.pack();
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
+
+    }
+}
+*/
+
+    public static ListCleaner getListFilter(String attribute, String target) {
+        ListCleaner filter = null;
+        if (attribute.equals("brand")) {
+            filter = list ->
+                    list.stream()
+                            .filter(s -> s.contains("brand=" + target))
+                            .toList();
+        }
+        if (attribute.equals("color")) {
+            filter = list ->
+                    list.stream()
+                            .filter(s -> s.contains("color=" + target))
+                            .toList();
+        }
+        if (attribute.equals("size")) {
+            filter = list ->
+                    list.stream()
+                            .filter(s -> s.contains("size=" + target))
+                            .toList();
+        }
+        return filter;
+    }
+
+    public static List<String> filterAndCleanList(ListCleaner lc, List<String> list) {
+        return lc.apply(list);
+    }
 }
