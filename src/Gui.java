@@ -11,11 +11,14 @@ public class Gui {
     final static int extraWindowHeight = 20;
     int lastOrderID;
     final Repository repo;
+    final Report rprt;
     Font defaultFont = new Font("Arial", Font.PLAIN, 16);
     final List<Shoe> shoesInStock;
-    public Gui(Repository r) {
-        repo = r;
-        shoesInStock = repo.shoes.stream().filter(s -> s.getInventory() > 0).toList();
+
+    public Gui(Repository repo, Report rprt) {
+        this.repo = repo;
+        this.rprt = rprt;
+        shoesInStock = this.rprt.shoes.stream().filter(s -> s.getInventory() > 0).toList();
         List<JCheckBox> checkBoxes = new ArrayList<>();
         List<JSpinner> spinners = new ArrayList<>();
 
@@ -180,7 +183,7 @@ public class Gui {
             for (int i = 0; i < numberOfShoes; i++) {
                 if (checkBoxes.get(i).isSelected()) {
                     try {
-                        repo.placeOrder(lastOrderID + 1, repo.thisCustomer.getId(), repo.shoes.get(i).getId(), (Integer) spinners.get(i).getValue());
+                        repo.placeOrder(lastOrderID + 1, repo.thisCustomer.getId(), rprt.shoes.get(i).getId(), (Integer) spinners.get(i).getValue());
                     } catch (SQLException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -353,46 +356,31 @@ public class Gui {
         cardReports.add(showReportButton, gbc);
         showReportButton.addActionListener(e -> {
             List<String[]> report;
+            String queryOne;
             if (queryOneButton.isSelected()) {
-                try {
-                    if (typeBrandsButton.isSelected()) {
-                        report = repo.getListQueryOne("brand", brandsBox.getSelectedItem().toString());
-                    } else if (typeColorsButton.isSelected()) {
-                        report = repo.getListQueryOne("color", colorsBox.getSelectedItem().toString());
-                    } else {
-                        report = repo.getListQueryOne("size", sizesBox.getSelectedItem().toString());
-                    }
-                } catch (SQLException ex) {
-                    throw new RuntimeException(ex);
+                if (typeBrandsButton.isSelected()) {
+                    report = rprt.getListQueryOne("brand", brandsBox.getSelectedItem().toString());
+                    queryOne = "Visa de kunder som beställt skor av märket " + brandsBox.getSelectedItem().toString();
+
+                } else if (typeColorsButton.isSelected()) {
+                    report = rprt.getListQueryOne("color", colorsBox.getSelectedItem().toString());
+                    queryOne = "Visa de kunder som beställt skor med " + colorsBox.getSelectedItem().toString().toLowerCase() + " färg";
+                } else {
+                    report = rprt.getListQueryOne("size", sizesBox.getSelectedItem().toString());
+                    queryOne = "Visa de kunder som beställt skor av storleken " + sizesBox.getSelectedItem().toString();
                 }
-                new ReportWindow(QUERYONE, report);
+                new ReportWindow(queryOne, report);
             } else if (queryTwoButton.isSelected()) {
-                try {
-                    report = repo.getListQueryTwo();
-                } catch (SQLException ex) {
-                    throw new RuntimeException(ex);
-                }
+                report = rprt.getListQueryTwo();
                 new ReportWindow(QUERYTWO, report);
             } else if (queryThreeButton.isSelected()) {
-                try {
-                    report = repo.getListQueryThree();
-                } catch (SQLException ex) {
-                    throw new RuntimeException(ex);
-                }
+                report = rprt.getListQueryThree();
                 new ReportWindow(QUERYTHREE, report);
             } else if (queryFourButton.isSelected()) {
-                try {
-                    report = repo.getListQueryFour();
-                } catch (SQLException ex) {
-                    throw new RuntimeException(ex);
-                }
+                report = rprt.getListQueryFour();
                 new ReportWindow(QUERYFOUR, report);
             } else if (queryFiveButton.isSelected()) {
-                try {
-                    report = repo.getListQueryFive();
-                } catch (SQLException ex) {
-                    throw new RuntimeException(ex);
-                }
+                report = rprt.getListQueryFive();
                 new ReportWindow(QUERYFIVE, report);
             }
         });
@@ -401,9 +389,8 @@ public class Gui {
         tabbedPane.addTab("Login", cardLogin);
         tabbedPane.addTab("Beställ", cardOrder);
         tabbedPane.addTab("Rapporter", cardReports);
-        //tabbedPane.setEnabledAt(1, false);
-        //tabbedPane.setEnabledAt(2, false);
-        tabbedPane.setSelectedIndex(2); // FOR TESTING
+        tabbedPane.setEnabledAt(1, false);
+        tabbedPane.setEnabledAt(2, false);
         frame.add(tabbedPane, BorderLayout.CENTER);
 
         frame.pack();
@@ -427,7 +414,7 @@ public class Gui {
             gbc.insets = new Insets(5, 5, 5, 5);
             gbc.gridx = 0;
             gbc.gridy = 0;
-            gbc.gridwidth = report.get(0).length;
+            gbc.gridwidth = report.getFirst().length;
             gbc.anchor = GridBagConstraints.CENTER;
             panel.add(new JLabel("<html><b>" + title + "</b></html>"), gbc);
             gbc.gridwidth = 1;
