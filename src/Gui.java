@@ -10,12 +10,12 @@ public class Gui {
     final static int extraWindowWidth = 30;
     final static int extraWindowHeight = 20;
     int lastOrderID;
-    Repository repo;
+    final Repository repo;
     Font defaultFont = new Font("Arial", Font.PLAIN, 16);
-
+    final List<Shoe> shoesInStock;
     public Gui(Repository r) {
         repo = r;
-
+        shoesInStock = repo.shoes.stream().filter(s -> s.getInventory() > 0).toList();
         List<JCheckBox> checkBoxes = new ArrayList<>();
         List<JSpinner> spinners = new ArrayList<>();
 
@@ -114,7 +114,7 @@ public class Gui {
                 return size;
             }
         };
-        int numberOfShoes = repo.shoes.size();
+        int numberOfShoes = shoesInStock.size();
         String[] headings = {"Val", "Antal", "Märke", "Färg", "Storlek", "Pris", "Lagersaldo"};
         cardOrder.setLayout(new GridBagLayout());
 
@@ -130,7 +130,7 @@ public class Gui {
         // Rad 2
         gbc.gridx = 0;
         gbc.gridy = 1;
-        for (Shoe shoe : repo.shoes) {
+        for (Shoe shoe : shoesInStock) {
             checkBoxes.add(new JCheckBox());
             cardOrder.add(checkBoxes.getLast(), gbc);
 
