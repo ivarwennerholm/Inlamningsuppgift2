@@ -56,6 +56,16 @@ public class Gui {
         // Rad 1
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        ImageIcon img = new ImageIcon("img/logo.png");
+        JLabel logoLabel = new JLabel();
+        logoLabel.setIcon(img);
+        cardLogin.add(logoLabel, gbc);
+
+        // Rad 2
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.LINE_END;
         cardLogin.add(new JLabel("Användarnamn:"), gbc);
 
@@ -64,9 +74,9 @@ public class Gui {
         JTextField userNameTextField = new JTextField("", 10);
         cardLogin.add(userNameTextField, gbc);
 
-        // Rad 2
+        // Rad 3
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         gbc.anchor = GridBagConstraints.LINE_END;
         cardLogin.add(new JLabel("Lösenord:"), gbc);
 
@@ -76,16 +86,16 @@ public class Gui {
         passwordField.setEchoChar('*');
         cardLogin.add(passwordField, gbc);
 
-        // Rad 3
+        // Rad 4
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         JButton loginButton = new JButton("Logga in");
         cardLogin.add(loginButton, gbc);
 
-        // Rad 4
-        gbc.gridy = 3;
+        // Rad 5
+        gbc.gridy = 4;
         JLabel loginMessageLabel = new JLabel();
         cardLogin.add(loginMessageLabel, gbc);
 
@@ -136,7 +146,6 @@ public class Gui {
         for (Shoe shoe : shoesInStock) {
             checkBoxes.add(new JCheckBox());
             cardOrder.add(checkBoxes.getLast(), gbc);
-
             gbc.gridx++;
             SpinnerNumberModel model = new SpinnerNumberModel(1, 1, shoe.getInventory(), 1);
             spinners.add(new JSpinner(model));
@@ -180,20 +189,24 @@ public class Gui {
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
-            for (int i = 0; i < numberOfShoes; i++) {
-                if (checkBoxes.get(i).isSelected()) {
-                    try {
-                        repo.placeOrder(lastOrderID + 1, repo.thisCustomer.getId(), rprt.shoes.get(i).getId(), (Integer) spinners.get(i).getValue());
-                    } catch (SQLException ex) {
-                        throw new RuntimeException(ex);
+            if (checkBoxes.stream().anyMatch(b -> b.isSelected())) {
+                for (int i = 0; i < numberOfShoes; i++) {
+                    if (checkBoxes.get(i).isSelected()) {
+                        try {
+                            repo.placeOrder(lastOrderID + 1, repo.thisCustomer.getId(), rprt.shoes.get(i).getId(), (Integer) spinners.get(i).getValue());
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                 }
+                orderMessageLabel.setText("Beställningen genomförd");
+                for (JCheckBox box : checkBoxes)
+                    box.setSelected(false);
+                for (JSpinner spinner : spinners)
+                    spinner.setValue(1);
+            } else {
+                orderMessageLabel.setText("Ingen produkt vald");
             }
-            orderMessageLabel.setText("Beställningen genomförd!");
-            for (JCheckBox box : checkBoxes)
-                box.setSelected(false);
-            for (JSpinner spinner : spinners)
-                spinner.setValue(1);
         });
 
         // Card "Reports"

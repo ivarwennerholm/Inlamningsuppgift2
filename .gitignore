@@ -39,3 +39,6 @@ bin/
 
 ### MySQL ###
 *.sql
+
+## Misc ###
+*.txt
