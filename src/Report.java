@@ -28,7 +28,9 @@ public class Report {
             default -> null;
         };
         for (Customer cust : customers) {
-            if (orders.stream().filter(pred).anyMatch(o -> o.getCustomer().getId() == cust.getId()))
+            if (orders.stream().
+                    filter(pred).
+                    anyMatch(o -> o.getCustomer().getId() == cust.getId()))
                 report.add(new String[]{cust.getFirstName() + " " + cust.getLastName(), cust.getAddress(), String.valueOf(cust.getZipCode()), cust.getCity()});
         }
         return report;
@@ -37,7 +39,9 @@ public class Report {
     public List<String[]> getListQueryTwo() {
         List<String[]> report = new ArrayList<>();
         for (Customer cust : customers) {
-            long occ = orders.stream().filter(o -> o.getCustomer().getId() == cust.getId()).count();
+            long occ = orders.stream().
+                    filter(o -> o.getCustomer().getId() == cust.getId()).
+                    count();
             report.add(new String[]{cust.getFirstName() + " " + cust.getLastName(), String.valueOf(occ)});
         }
         return addSymbolToLastNumber(getSortedList(comp, report), "st");
@@ -57,7 +61,9 @@ public class Report {
 
     public List<String[]> getListQueryFour() {
         List<String[]> report = new ArrayList<>();
-        Set<String> cities = customers.stream().map(Customer::getCity).collect(Collectors.toSet());
+        Set<String> cities = customers.stream().
+                map(Customer::getCity).
+                collect(Collectors.toSet());
         for (String city : cities) {
             int total = orders.stream().
                     filter(o -> o.getCustomer().getCity().equalsIgnoreCase(city)).
@@ -77,9 +83,10 @@ public class Report {
                     mapToInt(Integer::valueOf).sum();
             report.add(new String[]{shoe.getBrand(), shoe.getColor(), String.valueOf(shoe.getSize()), String.valueOf(total)});
         }
-        report = addSymbolToLastNumber(getSortedList(comp, report), "st");
-        report.subList(5, report.size()).clear();
-        return report;
+        return addSymbolToLastNumber(getSortedList(comp, report), "par").
+                stream().
+                limit(5).
+                toList();
     }
 
     List<String[]> getSortedList(Comparator<String[]> comp, List<String[]> list) {
@@ -93,6 +100,8 @@ public class Report {
                 arr[arr.length - 1] = arr[arr.length - 1] + " st";
             else if (type.equals("kr"))
                 arr[arr.length - 1] = arr[arr.length - 1] + " kr";
+            else if (type.equals("par"))
+                arr[arr.length - 1] = arr[arr.length - 1] + " par";
         }
         return list;
     }

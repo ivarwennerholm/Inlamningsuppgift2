@@ -230,9 +230,9 @@ public class Gui {
         // Skapa och fyll i JComboBoxes
         JComboBox brandsBox, colorsBox, sizesBox;
         try {
-            brandsBox = new JComboBox(repo.getOrderedTypes("brands"));
-            colorsBox = new JComboBox(repo.getOrderedTypes("colors"));
-            sizesBox = new JComboBox(repo.getOrderedTypes("sizes"));
+            brandsBox = new JComboBox(repo.getOrderedTypesForJComboBox("brands"));
+            colorsBox = new JComboBox(repo.getOrderedTypesForJComboBox("colors"));
+            sizesBox = new JComboBox(repo.getOrderedTypesForJComboBox("sizes"));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -374,13 +374,12 @@ public class Gui {
                 if (typeBrandsButton.isSelected()) {
                     report = rprt.getListQueryOne("brand", brandsBox.getSelectedItem().toString());
                     queryOne = "Visa de kunder som beställt skor av märket " + brandsBox.getSelectedItem().toString();
-
                 } else if (typeColorsButton.isSelected()) {
                     report = rprt.getListQueryOne("color", colorsBox.getSelectedItem().toString());
                     queryOne = "Visa de kunder som beställt skor med " + colorsBox.getSelectedItem().toString().toLowerCase() + " färg";
                 } else {
                     report = rprt.getListQueryOne("size", sizesBox.getSelectedItem().toString());
-                    queryOne = "Visa de kunder som beställt skor av storleken " + sizesBox.getSelectedItem().toString();
+                    queryOne = "Visa de kunder som beställt skor med storlek " + sizesBox.getSelectedItem().toString();
                 }
                 new ReportWindow(queryOne, report);
             } else if (queryTwoButton.isSelected()) {

@@ -106,8 +106,14 @@ public class Repository {
                 int orderID = rs.getInt("orderID");
                 int shoeID = rs.getInt("shoeID");
                 int number = rs.getInt("num");
-                Order order = ordersInput.stream().filter(o -> o.getId() == orderID).findFirst().orElse(null);
-                Shoe shoe = shoesInput.stream().filter(s -> s.getId() == shoeID).findFirst().orElse(null);
+                Order order = ordersInput.stream().
+                        filter(o -> o.getId() == orderID).
+                        findFirst().
+                        orElse(null);
+                Shoe shoe = shoesInput.stream().
+                        filter(s -> s.getId() == shoeID).
+                        findFirst().
+                        orElse(null);
                 output.add(new OrderContent(order, shoe, number));
             }
         } catch (SQLException e) {
@@ -125,7 +131,7 @@ public class Repository {
         return output;
     }
 
-    public List<Order> getOrdersFromDB(List<Customer> customers) throws SQLException {
+    public List<Order> getOrdersFromDB(List<Customer> customersInput) throws SQLException {
         List<Order> output = new ArrayList<>();
         try {
             con = DriverManager.getConnection(url, user, pw);
@@ -134,7 +140,10 @@ public class Repository {
             while (rs.next()) {
                 int id = rs.getInt("id");
                 int customerID = rs.getInt("customerID");
-                Customer customer = customers.stream().filter(c -> c.getId() == customerID).findFirst().orElse(null);
+                Customer customer = customersInput.stream().
+                        filter(c -> c.getId() == customerID).
+                        findFirst().
+                        orElse(null);
                 output.add(new Order(id, customer));
             }
         } catch (SQLException e) {
@@ -155,9 +164,15 @@ public class Repository {
     public List<Order> completeOrderList(List<Order> ordersInput, List<OrderContent> orderContentsInput) {
         for (Order order : ordersInput) {
             int totalValue = 0;
-            List<OrderContent> ocList = orderContentsInput.stream().filter(oc -> oc.getOrder().getId() == order.getId()).toList();
-            List<Shoe> shoeList = ocList.stream().map(OrderContent::getShoe).toList();
-            List<Integer> numberList = ocList.stream().map(OrderContent::getNumber).toList();
+            List<OrderContent> contentList = orderContentsInput.stream().
+                    filter(oc -> oc.getOrder().getId() == order.getId()).
+                    toList();
+            List<Shoe> shoeList = contentList.stream().
+                    map(OrderContent::getShoe).
+                    toList();
+            List<Integer> numberList = contentList.stream().
+                    map(OrderContent::getNumber).
+                    toList();
             for (int i = 0; i < shoeList.size(); i++) {
                 totalValue += shoeList.get(i).getPrice() * numberList.get(i);
             }
@@ -246,7 +261,7 @@ public class Repository {
         }
     }
 
-    public String[] getOrderedTypes(String type) throws SQLException {
+    public String[] getOrderedTypesForJComboBox(String type) throws SQLException {
         List<String> list = new ArrayList<>();
         String inject = "";
         if (type.equals("brands"))
